@@ -1,0 +1,78 @@
+# n8n-nodes-okdata
+
+An [n8n](https://n8n.io/) community node for [okdata](https://okdata.online/?src=n8n-node): social media data for your workflows and AI agents. Search TikTok, RedNote (Xiaohongshu), Douyin, WeChat, X and YouTube; read comments, the Douyin and Weibo hot search lists, WeChat article reads and likes, and video transcripts. One okdata API key covers 200+ endpoints on 17 platforms, billed per call. Failed calls are free, and you need no platform accounts, cookies or QR logins.
+
+[Installation](#installation) · [Operations](#operations) · [Credentials](#credentials) · [Usage](#usage) · [Costs](#costs) · [Compatibility](#compatibility) · [Resources](#resources)
+
+## Installation
+
+Follow the [community nodes installation guide](https://docs.n8n.io/integrations/community-nodes/installation/): in n8n, open **Settings > Community Nodes**, select **Install**, and enter `n8n-nodes-okdata`.
+
+## Operations
+
+| Resource              | Operation            | What it returns                                                                                                                    | Per call at release  |
+| --------------------- | -------------------- | ---------------------------------------------------------------------------------------------------------------------------------- | -------------------- |
+| TikTok                | Search Videos        | Videos by keyword, with plays, likes, comments and shares                                                                          | $0.002               |
+| RedNote (Xiaohongshu) | Search Notes         | Notes by keyword, newest or most popular first                                                                                     | $0.02                |
+| RedNote (Xiaohongshu) | Get Note Comments    | Comments on a note, with likes and replies                                                                                         | $0.02                |
+| Douyin                | Search Videos        | Videos by keyword, with likes, comments and shares                                                                                 | $0.02                |
+| Douyin                | Get Video Comments   | Top comments on a video                                                                                                            | $0.002               |
+| Douyin                | Get Hot Search       | The current hot search board                                                                                                       | $0.002               |
+| Weibo                 | Get Hot Search       | The current hot search list                                                                                                        | $0.002               |
+| WeChat                | Search Articles      | Official Account articles and Channels videos by keyword                                                                           | $0.02                |
+| WeChat                | Get Account Articles | An Official Account's published articles, newest first                                                                             | $0.02                |
+| WeChat                | Get Article Stats    | Reads, likes, shares, saves and comments of an article                                                                             | $0.02                |
+| X (Twitter)           | Search Posts         | Posts by query, X search operators included                                                                                        | $0.002               |
+| YouTube               | Get Transcript       | A video's transcript with timestamps                                                                                               | $0.004               |
+| Any Endpoint          | Find                 | Endpoints for a need described in plain words, with price and parameters                                                           | free                 |
+| Any Endpoint          | Call                 | Any endpoint by ID: Bilibili, Kuaishou, Zhihu, Instagram, Reddit, Telegram, WeChat Channels, Meta and Google ad libraries and more | the endpoint's price |
+
+Live prices and every endpoint's fields: [okdata.online/apis](https://okdata.online/apis/?src=n8n-node).
+
+## Credentials
+
+1. Sign up at [okdata.online](https://okdata.online/signup/?src=n8n-node) with your email. New accounts get trial credit, and the console makes your first API key (it starts with `okd_`).
+2. In n8n, create an **okdata API** credential and paste the key into **API Key**. n8n tests it with a free request that reads your balance.
+
+Use a key made for this n8n instance, and give it daily or monthly spending limits in the okdata console if you like.
+
+## Usage
+
+- **List operations** return one n8n item per result, so you can connect a Split Out, Google Sheets or Slack node directly. **Max Pages** fetches more pages by following okdata's cursor.
+- **Simplify** returns fewer fields per result (okdata's compact view, same price).
+- **Options > Raw Response** returns okdata's full response for each call instead: the results, `page.next_cursor`, and `meta.billing` with the cost and the balance left. Pass `next_cursor` back in **Options > Start Cursor** to continue later.
+- **Any Endpoint > Find** is free and needs no paid call: describe the data you need ("kuaishou comments", "instagram profile") and it lists matching endpoint IDs with their parameters. **Any Endpoint > Call** then calls one with **Parameters (JSON)**, for example `{"query": "coffee", "sort": "latest"}`.
+- **As an AI agent tool**: the node can be attached to an AI Agent. Let the model fill fields such as Search Term with `{{ $fromAI('query', 'keywords to search for') }}`. For the whole catalog, give the agent okdata's [remote MCP server](https://okdata.online/integrations/n8n/?src=n8n-node) through the MCP Client Tool instead.
+
+### Example: daily RedNote brand watch
+
+1. **Schedule Trigger**: every day at 09:00.
+2. **okdata**: Resource **RedNote (Xiaohongshu)**, Operation **Search Notes**, Search Term = your brand name, Sort = **Newest**.
+3. **Slack** (or Feishu, email, Google Sheets): one message per note with `{{ $json.title }}`, `{{ $json.metrics.likes }}` and `{{ $json.url }}`.
+
+## Costs
+
+Each call is billed to your okdata balance at the endpoint's price; each page is a separate call. Every operation sends a price cap (`X-Max-Price`) a little above the endpoint's current price, so okdata refuses a call that would cost more, before it runs, and bills nothing for it. Change the cap with **Options > Max Price Per Call (USD)**; Any Endpoint > Call defaults to $0.10. Failed calls cost nothing. Errors show okdata's code and what to do, such as `insufficient_balance` (top up in the console) or `max_price_exceeded` (raise the cap); every code is listed at [okdata.online/docs/errors](https://okdata.online/docs/errors/?src=n8n-node).
+
+## Compatibility
+
+Built with the n8n-node CLI against n8n 1.x and 2.x (`n8nNodesApiVersion` 1). No runtime dependencies. The node connects only to `https://api.okdata.online`.
+
+## Privacy
+
+The node sends your API key and the field values of the operation you run to `api.okdata.online`, and stores nothing itself. okdata keeps call records for 30 days and results for 24 hours; see the [okdata privacy policy](https://okdata.online/privacy/?src=n8n-node).
+
+## Resources
+
+- [okdata documentation](https://okdata.online/docs/quickstart/?src=n8n-node)
+- [Using okdata in n8n without this node (HTTP Request, MCP Client Tool)](https://okdata.online/integrations/n8n/?src=n8n-node)
+- [n8n community nodes documentation](https://docs.n8n.io/integrations/#community-nodes)
+- Support: hello@okdata.online or [GitHub issues](https://github.com/okdataapi/n8n-nodes-okdata/issues)
+
+## Version history
+
+See [CHANGELOG.md](CHANGELOG.md).
+
+## License
+
+[MIT](LICENSE)

@@ -1,0 +1,72 @@
+{
+  "name": "n8n-nodes-okdata",
+  "version": "0.1.0",
+  "description": "n8n node for okdata: social media data from TikTok, RedNote (Xiaohongshu), Douyin, WeChat, Weibo, X, YouTube and 10 more platforms, billed per call.",
+  "license": "MIT",
+  "homepage": "https://okdata.online/integrations/n8n/?src=n8n-node",
+  "keywords": [
+    "n8n-community-node-package",
+    "n8n",
+    "okdata",
+    "social media",
+    "social data",
+    "tiktok",
+    "xiaohongshu",
+    "rednote",
+    "douyin",
+    "wechat",
+    "weibo",
+    "twitter",
+    "youtube transcript",
+    "bilibili",
+    "kuaishou"
+  ],
+  "author": {
+    "name": "okdata",
+    "email": "hello@okdata.online",
+    "url": "https://okdata.online"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/okdataapi/n8n-nodes-okdata.git"
+  },
+  "bugs": {
+    "url": "https://github.com/okdataapi/n8n-nodes-okdata/issues"
+  },
+  "engines": {
+    "node": ">=20.15"
+  },
+  "scripts": {
+    "build": "n8n-node build",
+    "build:watch": "tsc --watch",
+    "dev": "n8n-node dev",
+    "lint": "n8n-node lint",
+    "lint:fix": "n8n-node lint --fix",
+    "release": "n8n-node release",
+    "prepublishOnly": "n8n-node prerelease",
+    "test": "npm run build && node --test test/okdata.test.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "n8n": {
+    "n8nNodesApiVersion": 1,
+    "strict": true,
+    "credentials": [
+      "dist/credentials/OkdataApi.credentials.js"
+    ],
+    "nodes": [
+      "dist/nodes/Okdata/Okdata.node.js"
+    ]
+  },
+  "devDependencies": {
+    "@n8n/node-cli": "0.56.3",
+    "eslint": "9.32.0",
+    "prettier": "3.6.2",
+    "release-it": "^21.1.0",
+    "typescript": "5.9.2"
+  },
+  "peerDependencies": {
+    "n8n-workflow": "*"
+  }
+}
