@@ -56,7 +56,7 @@ Each call is billed to your okdata balance at the endpoint's price; each page is
 
 ## Compatibility
 
-Built with the n8n-node CLI against n8n 1.x and 2.x (`n8nNodesApiVersion` 1). No runtime dependencies. The node connects only to `https://api.okdata.online`.
+Built with the n8n-node CLI (`n8nNodesApiVersion` 1) and tested on n8n 2.47, where it also works as an AI agent tool. No runtime dependencies. The node connects only to `https://api.okdata.online`.
 
 ## Privacy
 
