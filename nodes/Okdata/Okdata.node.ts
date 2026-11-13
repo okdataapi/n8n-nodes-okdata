@@ -40,7 +40,8 @@ function resultsOf(envelope: Envelope): IDataObject[] {
 	const data = envelope.data ?? {};
 	if (Array.isArray(data.items)) return data.items as IDataObject[];
 	if (data.item && typeof data.item === 'object') return [data.item as IDataObject];
-	return [];
+	// Another shape: keep it whole rather than drop a paid answer.
+	return Object.keys(data).length ? [data] : [];
 }
 
 function toItems(rows: IDataObject[], itemIndex: number): INodeExecutionData[] {
@@ -137,17 +138,38 @@ async function runCurated(
 	const out: INodeExecutionData[] = [];
 	let cursor = options.cursor?.trim() || undefined;
 	for (let page = 0; page < maxPages; page++) {
-		const envelope = await okdataRequest.call(
-			this,
-			'GET',
-			path,
-			{ ...params, cursor },
-			maxPrice,
-			itemIndex,
-		);
-		out.push(...toItems(options.rawResponse ? [envelope] : resultsOf(envelope), itemIndex));
+		let envelope: Envelope;
+		try {
+			envelope = await okdataRequest.call(
+				this,
+				'GET',
+				path,
+				{ ...params, cursor },
+				maxPrice,
+				itemIndex,
+			);
+		} catch (error) {
+			// The first page fails the item. A later page keeps the pages already fetched (and billed).
+			if (page === 0) {
+				const failure =
+					error instanceof NodeApiError || error instanceof NodeOperationError
+						? error
+						: new NodeOperationError(this.getNode(), error as Error, { itemIndex });
+				throw failure;
+			}
+			if (this.continueOnFail()) {
+				out.push({
+					json: { error: (error as Error).message, pagesFetched: page },
+					pairedItem: { item: itemIndex },
+				});
+			}
+			break;
+		}
+		const rows = resultsOf(envelope);
+		out.push(...toItems(options.rawResponse ? [envelope] : rows, itemIndex));
 		const next = envelope.page?.next_cursor;
-		if (!envelope.page?.has_more || !next) break;
+		// Stop on the last page, an empty page or a cursor that does not move: never pay for a repeat.
+		if (!envelope.page?.has_more || !next || next === cursor || rows.length === 0) break;
 		cursor = next;
 	}
 	return out;

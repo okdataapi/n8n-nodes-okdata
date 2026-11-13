@@ -121,6 +121,7 @@ export async function okdataRequest(
 		json: true,
 		returnFullResponse: true,
 		ignoreHttpStatusErrors: true,
+		disableFollowRedirect: true,
 		timeout: TIMEOUT_MS,
 	};
 	if (method === 'GET') options.qs = toQuery(params);
@@ -134,7 +135,8 @@ export async function okdataRequest(
 			options,
 		)) as FullResponse;
 	} catch (error) {
-		throw new NodeApiError(this.getNode(), error as JsonObject, {
+		// Only the message is kept: the raw error holds the request, Authorization header included.
+		throw new NodeApiError(this.getNode(), { message: (error as Error).message } as JsonObject, {
 			itemIndex,
 			message: 'The answer from api.okdata.online did not arrive',
 			description:

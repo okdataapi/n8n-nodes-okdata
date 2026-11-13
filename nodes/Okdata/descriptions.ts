@@ -493,7 +493,7 @@ const pagingFields: INodeProperties[] = [
 		type: 'number',
 		typeOptions: { minValue: 1, maxValue: 50 },
 		default: 1,
-		description: `How many pages of results to fetch. ${PAGE_NOTE}.`,
+		description: `How many pages of results to fetch. ${PAGE_NOTE}. If a later page fails, the pages already fetched are returned.`,
 		displayOptions: {
 			show: {
 				operation: [

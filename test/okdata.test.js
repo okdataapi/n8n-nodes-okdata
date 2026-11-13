@@ -162,6 +162,67 @@ test('max pages follows next_cursor and stops when there are no more', async () 
 	);
 });
 
+test('paging stops when the cursor does not move or a page is empty', async () => {
+	const stuck = () => [200, ok({ items: [{ id: 'x' }] }, { has_more: true, next_cursor: 'same' })];
+	const first = await run(
+		{
+			resource: 'x',
+			operation: 'searchPosts',
+			query: 'a',
+			maxPages: 5,
+			options: { cursor: 'same' },
+		},
+		stuck,
+	);
+	assert.equal(first.calls.auth.length, 1);
+	const empty = () => [200, ok({ items: [] }, { has_more: true, next_cursor: 'c2' })];
+	const second = await run(
+		{ resource: 'x', operation: 'searchPosts', query: 'a', maxPages: 5 },
+		empty,
+	);
+	assert.equal(second.calls.auth.length, 1);
+});
+
+test('a failing later page keeps the pages already fetched', async () => {
+	const answer = (options, n) =>
+		n === 1
+			? [200, ok({ items: [{ id: 'p1' }] }, { has_more: true, next_cursor: 'c1' })]
+			: [503, { code: 'upstream_busy', message: 'Busy', charged: false }];
+	const plain = await run(
+		{ resource: 'tiktok', operation: 'searchVideos', query: 'a', maxPages: 3 },
+		answer,
+	);
+	assert.deepEqual(
+		plain.out.map((o) => o.json.id),
+		['p1'],
+	);
+	const tolerant = await run(
+		{ resource: 'tiktok', operation: 'searchVideos', query: 'a', maxPages: 3 },
+		answer,
+		{ continueOnFail: true },
+	);
+	assert.equal(tolerant.out.length, 2);
+	assert.equal(tolerant.out[1].json.pagesFetched, 1);
+});
+
+test('call: an answer without items or item is kept whole', async () => {
+	const params = {
+		resource: 'endpoint',
+		operation: 'call',
+		endpointId: { mode: 'id', value: 'weibo.trends.list' },
+	};
+	const { out } = await run(params, () => [200, ok({ summary: 'x' })]);
+	assert.deepEqual(out[0].json, { summary: 'x' });
+});
+
+test('requests never follow redirects', async () => {
+	const { calls } = await run({ resource: 'weibo', operation: 'getHotSearch' }, () => [
+		200,
+		ok({ items: [] }),
+	]);
+	assert.equal(calls.auth[0].options.disableFollowRedirect, true);
+});
+
 test('options: simplify, fields, cursor, max price and raw response', async () => {
 	const params = {
 		resource: 'x',
