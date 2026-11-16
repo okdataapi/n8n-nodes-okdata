@@ -1,6 +1,6 @@
 # n8n-nodes-okdata
 
-An [n8n](https://n8n.io/) community node for [okdata](https://okdata.online/?src=n8n-node): social media data for your workflows and AI agents. Search TikTok, RedNote (Xiaohongshu), Douyin, WeChat, X and YouTube; read comments, the Douyin and Weibo hot search lists, WeChat article reads and likes, and video transcripts. One okdata API key covers 200+ endpoints on 17 platforms, billed per call. Failed calls are free, and you need no platform accounts, cookies or QR logins.
+An [n8n](https://n8n.io/) community node for [okdata](https://okdata.online/?src=n8n-node): social media data for your workflows and AI agents. Search TikTok, RedNote (Xiaohongshu), Douyin, WeChat, X and YouTube; read comments, the Douyin and Weibo hot search lists, WeChat article reads and likes, and video transcripts. One okdata API key covers 200+ endpoints on 17 platforms, billed per call. You need no platform accounts, cookies or QR logins.
 
 [Installation](#installation) · [Operations](#operations) · [Credentials](#credentials) · [Usage](#usage) · [Costs](#costs) · [Compatibility](#compatibility) · [Resources](#resources)
 
@@ -52,7 +52,7 @@ Use a key made for this n8n instance, and give it daily or monthly spending limi
 
 ## Costs
 
-Each call is billed to your okdata balance at the endpoint's price; each page is a separate call. Every operation sends a price cap (`X-Max-Price`) a little above the endpoint's current price, so okdata refuses a call that would cost more, before it runs, and bills nothing for it. Change the cap with **Options > Max Price Per Call (USD)**; Any Endpoint > Call defaults to $0.10. Failed calls cost nothing. Errors show okdata's code and what to do, such as `insufficient_balance` (top up in the console) or `max_price_exceeded` (raise the cap); every code is listed at [okdata.online/docs/errors](https://okdata.online/docs/errors/?src=n8n-node).
+Each call is billed to your okdata balance at the endpoint's price; each page is a separate call. Every operation sends a price cap (`X-Max-Price`) a little above the endpoint's current price, so okdata refuses a call that would cost more, before it runs, and bills nothing for it. Change the cap with **Options > Max Price Per Call (USD)**; Any Endpoint > Call defaults to $0.10. A call that reaches the data source is billed even when it comes back empty, not found or failed; calls stopped before that, such as bad parameters or a low balance, cost nothing. Errors show okdata's code and what to do, such as `insufficient_balance` (top up in the console) or `max_price_exceeded` (raise the cap); every code is listed at [okdata.online/docs/errors](https://okdata.online/docs/errors/?src=n8n-node).
 
 ## Compatibility
 
