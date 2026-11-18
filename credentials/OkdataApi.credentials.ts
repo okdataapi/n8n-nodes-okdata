@@ -40,7 +40,7 @@ export class OkdataApi implements ICredentialType {
 		},
 	};
 
-	// GET /v1/account is free: it checks the key and returns the balance, nothing is billed.
+	// GET /v1/account is free: it checks the key and returns the balance.
 	test: ICredentialTestRequest = {
 		request: {
 			baseURL: 'https://api.okdata.online',

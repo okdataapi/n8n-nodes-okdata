@@ -25,6 +25,7 @@ import {
 	OPERATIONS,
 	type OperationSpec,
 } from './shared/operations';
+import { LINK } from './shared/ids';
 import { type Envelope, fetchCatalog, normalizeMaxPrice, okdataRequest } from './shared/transport';
 
 interface OutputOptions {
@@ -40,7 +41,7 @@ function resultsOf(envelope: Envelope): IDataObject[] {
 	const data = envelope.data ?? {};
 	if (Array.isArray(data.items)) return data.items as IDataObject[];
 	if (data.item && typeof data.item === 'object') return [data.item as IDataObject];
-	// Another shape: keep it whole rather than drop a paid answer.
+	// Another shape: keep it whole rather than drop the answer.
 	return Object.keys(data).length ? [data] : [];
 }
 
@@ -123,6 +124,11 @@ async function runCurated(
 	const params: IDataObject = viewParams(simplify, options);
 	for (const [field, apiName] of Object.entries(spec.fields)) {
 		const value = this.getNodeParameter(field, itemIndex, '') as string | number | boolean;
+		const linkName = spec.linkParam?.[apiName];
+		if (linkName && typeof value === 'string' && LINK.test(value.trim())) {
+			params[linkName] = value.trim();
+			continue;
+		}
 		const clean = spec.clean?.[apiName];
 		params[apiName] = clean && typeof value === 'string' ? clean(value) : value;
 	}
@@ -149,7 +155,7 @@ async function runCurated(
 				itemIndex,
 			);
 		} catch (error) {
-			// The first page fails the item. A later page keeps the pages already fetched (and billed).
+			// The first page fails the item. A later page keeps the pages already fetched.
 			if (page === 0) {
 				const failure =
 					error instanceof NodeApiError || error instanceof NodeOperationError
@@ -168,7 +174,7 @@ async function runCurated(
 		const rows = resultsOf(envelope);
 		out.push(...toItems(options.rawResponse ? [envelope] : rows, itemIndex));
 		const next = envelope.page?.next_cursor;
-		// Stop on the last page, an empty page or a cursor that does not move: never pay for a repeat.
+		// Stop on the last page, an empty page or a cursor that does not move: never fetch a page twice.
 		if (!envelope.page?.has_more || !next || next === cursor || rows.length === 0) break;
 		cursor = next;
 	}
@@ -261,7 +267,7 @@ export class Okdata implements INodeType {
 		version: 1,
 		subtitle: '={{$parameter["operation"] + ": " + $parameter["resource"]}}',
 		description:
-			'Social media data from TikTok, RedNote (Xiaohongshu), Douyin, WeChat, Weibo, X, YouTube and 10 more platforms, billed per call',
+			'Public social media and e-commerce data from TikTok, YouTube, Instagram, X, Reddit, Amazon and 17 more platforms, pay per call',
 		defaults: {
 			name: 'okdata',
 		},

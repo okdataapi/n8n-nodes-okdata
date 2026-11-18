@@ -4,6 +4,10 @@
 const YOUTUBE_ID = /(?:v=|youtu\.be\/|\/shorts\/|\/embed\/|\/live\/)([A-Za-z0-9_-]{11})/;
 const DOUYIN_ID = /(?:\/video\/|\/note\/|modal_id=|aweme_id=)(\d{15,21})/;
 const XIAOHONGSHU_NOTE_ID = /(?:\/explore\/|\/discovery\/item\/|\/item\/)([0-9a-f]{24})/;
+const TIKTOK_ID = /\/video\/(\d{15,21})/;
+const AMAZON_ASIN = /(?:\/dp\/|\/gp\/product\/|\/product-reviews\/)([A-Z0-9]{10})(?=[/?#]|$)/;
+/** A web link, with or without https://, such as reddit.com/r/... or redd.it/... */
+export const LINK = /^(?:https?:\/\/)?(?:[\w-]+\.)+[a-z]{2,}\//i;
 
 function firstGroup(pattern: RegExp, value: string): string {
 	const text = value.trim();
@@ -19,3 +23,9 @@ export const douyinVideoId = (value: string): string => firstGroup(DOUYIN_ID, va
 
 /** The 24-character note ID, also from a xiaohongshu.com/explore/... link. */
 export const xiaohongshuNoteId = (value: string): string => firstGroup(XIAOHONGSHU_NOTE_ID, value);
+
+/** The numeric video ID, also from a tiktok.com/@user/video/... link. */
+export const tiktokVideoId = (value: string): string => firstGroup(TIKTOK_ID, value);
+
+/** The 10-character ASIN, also from an Amazon product link with /dp/ in it. */
+export const amazonAsin = (value: string): string => firstGroup(AMAZON_ASIN, value);

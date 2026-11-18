@@ -39,19 +39,14 @@ interface FullResponse {
 
 let catalogCache: { at: number; catalog: Catalog } | undefined;
 
-function billedSentence(charged: unknown): string {
-	if (charged === false) return 'Nothing was billed.';
-	if (charged === true) return 'This call was billed.';
-	return 'Whether this call was billed is not known yet; look it up by request ID in the okdata console.';
-}
+const CHECK_CONSOLE = 'Check Calls in the okdata console before running it again.';
 
-/** The description n8n shows under an okdata error: problems, what to do, billing, request ID. */
+/** The description n8n shows under an okdata answer that is not ok: details, next step, request ID. */
 export function errorDescription(body: IDataObject): string {
 	const parts: string[] = [];
 	const problems = Array.isArray(body.problems) ? body.problems.map(String) : [];
-	if (problems.length) parts.push(`Problems: ${problems.join('; ')}`);
+	if (problems.length) parts.push(`Details: ${problems.join('; ')}`);
 	if (typeof body.next_step === 'string') parts.push(body.next_step);
-	parts.push(billedSentence('charged' in body ? body.charged : undefined));
 	if (typeof body.request_id === 'string') parts.push(`Request ID: ${body.request_id}.`);
 	if (typeof body.docs_url === 'string') parts.push(`Docs: ${body.docs_url}`);
 	return parts.join(' ');
@@ -139,8 +134,7 @@ export async function okdataRequest(
 		throw new NodeApiError(this.getNode(), { message: (error as Error).message } as JsonObject, {
 			itemIndex,
 			message: 'The answer from api.okdata.online did not arrive',
-			description:
-				'The call may still finish. Check Calls in the okdata console before running it again.',
+			description: `The call may still finish. ${CHECK_CONSOLE}`,
 		});
 	}
 	return checkResponse.call(this, response, itemIndex);
@@ -161,7 +155,7 @@ function checkResponse(
 		throw new NodeApiError(this.getNode(), envelope as JsonObject, {
 			itemIndex,
 			httpCode: String(response.statusCode),
-			message: `okdata error ${code}: ${message}`,
+			message: `okdata could not complete the call: ${message} (${code})`,
 			description: errorDescription(envelope),
 		});
 	}
@@ -169,7 +163,7 @@ function checkResponse(
 		itemIndex,
 		httpCode: String(response.statusCode),
 		message: 'okdata answered with something that is not JSON',
-		description: billedSentence(undefined),
+		description: CHECK_CONSOLE,
 	});
 }
 

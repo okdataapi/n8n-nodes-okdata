@@ -1,6 +1,6 @@
 # n8n-nodes-okdata
 
-An [n8n](https://n8n.io/) community node for [okdata](https://okdata.online/?src=n8n-node): social media data for your workflows and AI agents. Search TikTok, RedNote (Xiaohongshu), Douyin, WeChat, X and YouTube; read comments, the Douyin and Weibo hot search lists, WeChat article reads and likes, and video transcripts. One okdata API key covers 200+ endpoints on 17 platforms, billed per call. You need no platform accounts, cookies or QR logins.
+An [n8n](https://n8n.io/) community node for [okdata](https://okdata.online/?src=n8n-node): public data from social media and online stores for your workflows and AI agents. Search TikTok, YouTube, X, Reddit and Amazon; read Instagram profiles and posts; get the comments on TikTok, YouTube, Instagram and Reddit posts, Amazon product reviews and YouTube transcripts. RedNote (Xiaohongshu), Douyin, WeChat and Weibo are covered too. One okdata API key covers 230+ endpoints on 23 platforms, pay per call with no subscription. You need no platform accounts, cookies or QR logins.
 
 [Installation](#installation) · [Operations](#operations) · [Credentials](#credentials) · [Usage](#usage) · [Costs](#costs) · [Compatibility](#compatibility) · [Resources](#resources)
 
@@ -10,22 +10,32 @@ Follow the [community nodes installation guide](https://docs.n8n.io/integrations
 
 ## Operations
 
-| Resource              | Operation            | What it returns                                                                                                                    | Per call at release  |
-| --------------------- | -------------------- | ---------------------------------------------------------------------------------------------------------------------------------- | -------------------- |
-| TikTok                | Search Videos        | Videos by keyword, with plays, likes, comments and shares                                                                          | $0.002               |
-| RedNote (Xiaohongshu) | Search Notes         | Notes by keyword, newest or most popular first                                                                                     | $0.02                |
-| RedNote (Xiaohongshu) | Get Note Comments    | Comments on a note, with likes and replies                                                                                         | $0.02                |
-| Douyin                | Search Videos        | Videos by keyword, with likes, comments and shares                                                                                 | $0.02                |
-| Douyin                | Get Video Comments   | Top comments on a video                                                                                                            | $0.002               |
-| Douyin                | Get Hot Search       | The current hot search board                                                                                                       | $0.002               |
-| Weibo                 | Get Hot Search       | The current hot search list                                                                                                        | $0.002               |
-| WeChat                | Search Articles      | Official Account articles and Channels videos by keyword                                                                           | $0.02                |
-| WeChat                | Get Account Articles | An Official Account's published articles, newest first                                                                             | $0.02                |
-| WeChat                | Get Article Stats    | Reads, likes, shares, saves and comments of an article                                                                             | $0.02                |
-| X (Twitter)           | Search Posts         | Posts by query, X search operators included                                                                                        | $0.002               |
-| YouTube               | Get Transcript       | A video's transcript with timestamps                                                                                               | $0.004               |
-| Any Endpoint          | Find                 | Endpoints for a need described in plain words, with price and parameters                                                           | free                 |
-| Any Endpoint          | Call                 | Any endpoint by ID: Bilibili, Kuaishou, Zhihu, Instagram, Reddit, Telegram, WeChat Channels, Meta and Google ad libraries and more | the endpoint's price |
+| Resource              | Operation            | What it returns                                                                                                                      | Price per call       |
+| --------------------- | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------ | -------------------- |
+| TikTok                | Search Videos        | Videos by keyword, with plays, likes, comments and shares                                                                            | $0.002               |
+| TikTok                | Get Video Comments   | Comments on a video, with likes and reply counts                                                                                     | $0.002               |
+| YouTube               | Search Videos        | Videos by keyword, with views, length and channel                                                                                    | $0.004               |
+| YouTube               | Get Video Comments   | Comments on a video, top or newest first                                                                                             | $0.002               |
+| YouTube               | Get Transcript       | A video's transcript with timestamps                                                                                                 | $0.004               |
+| Instagram             | Get Profile          | An account by handle: name, bio, followers, following and post count                                                                 | $0.004               |
+| Instagram             | Get Posts            | An account's posts or reels, newest first                                                                                            | $0.004               |
+| Instagram             | Get Post Comments    | Comments on a post or reel, newest first                                                                                             | $0.004               |
+| X (Twitter)           | Search Posts         | Posts by query, X search operators included                                                                                          | $0.002               |
+| Reddit                | Search Posts         | Posts by keyword, optionally from the last day, week, month or year                                                                  | $0.004               |
+| Reddit                | Get Post Comments    | Comments on a post with the first levels of replies                                                                                  | $0.002               |
+| Amazon                | Search Products      | Products in a country's Amazon store by keyword: price, rating, ratings count and badges                                             | $0.006               |
+| Amazon                | Get Product Reviews  | Customer reviews of a product: stars, text, date and verified purchase                                                               | $0.006               |
+| RedNote (Xiaohongshu) | Search Notes         | Notes by keyword, newest or most popular first                                                                                       | $0.02                |
+| RedNote (Xiaohongshu) | Get Note Comments    | Comments on a note, with likes and replies                                                                                           | $0.02                |
+| Douyin                | Search Videos        | Videos by keyword, with likes, comments and shares                                                                                   | $0.02                |
+| Douyin                | Get Video Comments   | Top comments on a video                                                                                                              | $0.002               |
+| Douyin                | Get Hot Search       | The current hot search board                                                                                                         | $0.002               |
+| WeChat                | Search Articles      | Official Account articles and Channels videos by keyword                                                                             | $0.02                |
+| WeChat                | Get Account Articles | An Official Account's published articles, newest first                                                                               | $0.02                |
+| WeChat                | Get Article Stats    | Reads, likes, shares, saves and comments of an article                                                                               | $0.02                |
+| Weibo                 | Get Hot Search       | The current hot search list                                                                                                          | $0.002               |
+| Any Endpoint          | Find                 | Endpoints for a need described in plain words, with price and parameters                                                             | free                 |
+| Any Endpoint          | Call                 | Any endpoint by ID: AliExpress, Telegram, Meta Ad Library, Google Ads Transparency, Bilibili, Kuaishou, Zhihu, Taobao, 1688 and more | the endpoint's price |
 
 Live prices and every endpoint's fields: [okdata.online/apis](https://okdata.online/apis/?src=n8n-node).
 
@@ -39,10 +49,19 @@ Use a key made for this n8n instance, and give it daily or monthly spending limi
 ## Usage
 
 - **List operations** return one n8n item per result, so you can connect a Split Out, Google Sheets or Slack node directly. **Max Pages** fetches more pages by following okdata's cursor.
-- **Simplify** returns fewer fields per result (okdata's compact view, same price).
+- **Simplify** returns fewer fields per result (okdata's compact view).
 - **Options > Raw Response** returns okdata's full response for each call instead: the results, `page.next_cursor`, and `meta.billing` with the cost and the balance left. Pass `next_cursor` back in **Options > Start Cursor** to continue later.
-- **Any Endpoint > Find** is free and needs no paid call: describe the data you need ("kuaishou comments", "instagram profile") and it lists matching endpoint IDs with their parameters. **Any Endpoint > Call** then calls one with **Parameters (JSON)**, for example `{"query": "coffee", "sort": "latest"}`.
+- **Any Endpoint > Find** is free: describe the data you need ("aliexpress reviews", "telegram channel messages") and it lists matching endpoint IDs with their parameters. **Any Endpoint > Call** then calls one with **Parameters (JSON)**, for example `{"query": "coffee", "sort": "latest"}`.
 - **As an AI agent tool**: the node can be attached to an AI Agent. Let the model fill fields such as Search Term with `{{ $fromAI('query', 'keywords to search for') }}`. For the whole catalog, give the agent okdata's [remote MCP server](https://okdata.online/integrations/n8n/?src=n8n-node) through the MCP Client Tool instead.
+
+### Example: weekly Reddit and YouTube comments digest in Slack
+
+1. **Schedule Trigger**: every Monday at 09:00.
+2. **okdata**: Resource **Reddit**, Operation **Search Posts**, Search Term = your product name, Sort = **Newest**, Posted Within = **Last Week**.
+3. **okdata**: Resource **Reddit**, Operation **Get Post Comments**, Post ID or URL = `{{ $json.id }}`. It runs once for each post found.
+4. From the same trigger, a second branch: **okdata** with Resource **YouTube**, Operation **Search Videos**, Search Term = your product name, Sort = **Newest**, then **okdata** with Operation **Get Video Comments**, Video ID or URL = `{{ $json.id }}`.
+5. **Merge** (Append) the two branches, then **Aggregate** the `text` field into one item.
+6. **Slack**: one message with `{{ $json.text.join('\n\n') }}`, or put an AI step before it to summarize the week.
 
 ### Example: daily RedNote brand watch
 
@@ -52,7 +71,11 @@ Use a key made for this n8n instance, and give it daily or monthly spending limi
 
 ## Costs
 
-Each call is billed to your okdata balance at the endpoint's price; each page is a separate call. Every operation sends a price cap (`X-Max-Price`) a little above the endpoint's current price, so okdata refuses a call that would cost more, before it runs, and bills nothing for it. Change the cap with **Options > Max Price Per Call (USD)**; Any Endpoint > Call defaults to $0.10. A call that reaches the data source is billed even when it comes back empty, not found or failed; calls stopped before that, such as bad parameters or a low balance, cost nothing. Errors show okdata's code and what to do, such as `insufficient_balance` (top up in the console) or `max_price_exceeded` (raise the cap); every code is listed at [okdata.online/docs/errors](https://okdata.online/docs/errors/?src=n8n-node).
+okdata is pay per call with no subscription, and new accounts get trial credit. Each call is billed to your okdata balance at the endpoint's price, and every endpoint has its own price ([okdata.online/apis](https://okdata.online/apis/?src=n8n-node)). Each page is a separate call, so Max Pages = 3 makes up to three calls.
+
+Every operation sends a price cap (`X-Max-Price`) a little above the endpoint's current price, and okdata refuses a call priced above the cap before it runs. Change the cap with **Options > Max Price Per Call (USD)**; Any Endpoint > Call defaults to $0.10.
+
+Messages from okdata show its code and what to do, such as `insufficient_balance` (top up in the console) or `max_price_exceeded` (raise the cap); every code is listed at [okdata.online/docs/errors](https://okdata.online/docs/errors/?src=n8n-node).
 
 ## Compatibility
 

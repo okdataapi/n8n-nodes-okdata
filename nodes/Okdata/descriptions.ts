@@ -4,26 +4,31 @@ const show = (resource: string, operation: string[]) => ({
 	show: { resource: [resource], operation },
 });
 
-const PAGE_NOTE = 'Each page is a separate call, billed at the endpoint price';
+const PAGE_NOTE = "Each page is a separate call at the endpoint's price";
 
 const resource: INodeProperties = {
 	displayName: 'Resource',
 	name: 'resource',
 	type: 'options',
 	noDataExpression: true,
+	// English-first platforms lead, then the Chinese ones, then Any Endpoint: a deliberate order.
+	// eslint-disable-next-line n8n-nodes-base/node-param-options-type-unsorted-items
 	options: [
+		{ name: 'TikTok', value: 'tiktok' },
+		{ name: 'YouTube', value: 'youtube' },
+		{ name: 'Instagram', value: 'instagram' },
+		{ name: 'X (Twitter)', value: 'x' },
+		{ name: 'Reddit', value: 'reddit' },
+		{ name: 'Amazon', value: 'amazon' },
+		{ name: 'RedNote (Xiaohongshu)', value: 'xiaohongshu' },
+		{ name: 'Douyin', value: 'douyin' },
+		{ name: 'WeChat', value: 'wechat' },
+		{ name: 'Weibo', value: 'weibo' },
 		{
 			name: 'Any Endpoint',
 			value: 'endpoint',
-			description: 'Find or call any of the 200+ okdata endpoints',
+			description: 'Find or call any of the 230+ okdata endpoints',
 		},
-		{ name: 'Douyin', value: 'douyin' },
-		{ name: 'RedNote (Xiaohongshu)', value: 'xiaohongshu' },
-		{ name: 'TikTok', value: 'tiktok' },
-		{ name: 'WeChat', value: 'wechat' },
-		{ name: 'Weibo', value: 'weibo' },
-		{ name: 'X (Twitter)', value: 'x' },
-		{ name: 'YouTube', value: 'youtube' },
 	],
 	default: 'tiktok',
 };
@@ -36,6 +41,12 @@ const operations: INodeProperties[] = [
 		noDataExpression: true,
 		displayOptions: { show: { resource: ['tiktok'] } },
 		options: [
+			{
+				name: 'Get Video Comments',
+				value: 'getVideoComments',
+				action: 'Get video comments',
+				description: 'Retrieve a list of comments on a TikTok video, with likes and reply counts',
+			},
 			{
 				name: 'Search Videos',
 				value: 'searchVideos',
@@ -57,7 +68,7 @@ const operations: INodeProperties[] = [
 				name: 'Get Note Comments',
 				value: 'getNoteComments',
 				action: 'Get note comments',
-				description: 'Retrieve the comments on a RedNote (Xiaohongshu) note',
+				description: 'Retrieve a list of comments on a RedNote (Xiaohongshu) note',
 			},
 			{
 				name: 'Search Notes',
@@ -85,7 +96,7 @@ const operations: INodeProperties[] = [
 				name: 'Get Video Comments',
 				value: 'getVideoComments',
 				action: 'Get video comments',
-				description: 'Retrieve the top comments on a Douyin video',
+				description: 'Retrieve a list of top comments on a Douyin video',
 			},
 			{
 				name: 'Search Videos',
@@ -123,7 +134,7 @@ const operations: INodeProperties[] = [
 				name: 'Get Account Articles',
 				value: 'getAccountArticles',
 				action: 'Get account articles',
-				description: 'Retrieve the articles an Official Account has published, newest first',
+				description: 'Retrieve a list of articles an Official Account has published, newest first',
 			},
 			{
 				name: 'Get Article Stats',
@@ -170,8 +181,97 @@ const operations: INodeProperties[] = [
 				action: 'Get video transcript',
 				description: 'Retrieve the transcript of a YouTube video with timestamps',
 			},
+			{
+				name: 'Get Video Comments',
+				value: 'getVideoComments',
+				action: 'Get video comments',
+				description: 'Retrieve a list of comments on a YouTube video, top or newest first',
+			},
+			{
+				name: 'Search Videos',
+				value: 'searchVideos',
+				action: 'Search videos',
+				description: 'Search YouTube videos by keyword, with views, length and channel',
+			},
 		],
-		default: 'getTranscript',
+		default: 'searchVideos',
+	},
+	{
+		displayName: 'Operation',
+		name: 'operation',
+		type: 'options',
+		noDataExpression: true,
+		displayOptions: { show: { resource: ['instagram'] } },
+		options: [
+			{
+				name: 'Get Post Comments',
+				value: 'getPostComments',
+				action: 'Get post comments',
+				description: 'Retrieve a list of comments on an Instagram post or reel, newest first',
+			},
+			{
+				name: 'Get Posts',
+				value: 'getPosts',
+				action: 'Get posts',
+				description:
+					"Retrieve a list of an Instagram account's posts or reels, newest first, with likes and comments",
+			},
+			{
+				name: 'Get Profile',
+				value: 'getProfile',
+				action: 'Get profile',
+				description:
+					'Retrieve an Instagram account by handle: name, bio, followers, following and post count',
+			},
+		],
+		default: 'getProfile',
+	},
+	{
+		displayName: 'Operation',
+		name: 'operation',
+		type: 'options',
+		noDataExpression: true,
+		displayOptions: { show: { resource: ['reddit'] } },
+		options: [
+			{
+				name: 'Get Post Comments',
+				value: 'getPostComments',
+				action: 'Get post comments',
+				description:
+					'Retrieve a list of comments on a Reddit post, with the first levels of replies',
+			},
+			{
+				name: 'Search Posts',
+				value: 'searchPosts',
+				action: 'Search posts',
+				description: 'Search Reddit posts by keyword, with community, score and comment count',
+			},
+		],
+		default: 'searchPosts',
+	},
+	{
+		displayName: 'Operation',
+		name: 'operation',
+		type: 'options',
+		noDataExpression: true,
+		displayOptions: { show: { resource: ['amazon'] } },
+		options: [
+			{
+				name: 'Get Product Reviews',
+				value: 'getProductReviews',
+				action: 'Get product reviews',
+				description:
+					'Retrieve customer reviews of an Amazon product: stars, text, date and verified purchase',
+			},
+			{
+				name: 'Search Products',
+				value: 'searchProducts',
+				action: 'Search products',
+				description:
+					'Search an Amazon store by keyword: price, rating, number of ratings and badges',
+			},
+		],
+		default: 'searchProducts',
 	},
 	{
 		displayName: 'Operation',
@@ -209,8 +309,14 @@ const searchFields: INodeProperties[] = [
 			'Keywords, as typed into the platform search box. Chinese keywords work best on Chinese platforms.',
 		displayOptions: {
 			show: {
-				operation: ['searchVideos', 'searchNotes', 'searchArticles', 'searchPosts'],
-				resource: ['tiktok', 'xiaohongshu', 'douyin', 'wechat', 'x'],
+				operation: [
+					'searchVideos',
+					'searchNotes',
+					'searchArticles',
+					'searchPosts',
+					'searchProducts',
+				],
+				resource: ['tiktok', 'youtube', 'x', 'reddit', 'amazon', 'xiaohongshu', 'douyin', 'wechat'],
 			},
 		},
 	},
@@ -226,6 +332,19 @@ const searchFields: INodeProperties[] = [
 		default: 'relevance',
 		description: 'Order of the results',
 		displayOptions: show('tiktok', ['searchVideos']),
+	},
+	{
+		displayName: 'Sort',
+		name: 'youtubeSort',
+		type: 'options',
+		options: [
+			{ name: 'Most Relevant', value: 'relevance' },
+			{ name: 'Most Viewed', value: 'most_viewed' },
+			{ name: 'Newest', value: 'latest' },
+		],
+		default: 'relevance',
+		description: 'Order of the results',
+		displayOptions: show('youtube', ['searchVideos']),
 	},
 	{
 		displayName: 'Sort',
@@ -318,9 +437,47 @@ const searchFields: INodeProperties[] = [
 		description: 'Order of the results',
 		displayOptions: show('x', ['searchPosts']),
 	},
+	{
+		displayName: 'Sort',
+		name: 'redditSort',
+		type: 'options',
+		options: [
+			{ name: 'Most Relevant', value: 'relevance' },
+			{ name: 'Newest', value: 'latest' },
+			{ name: 'Top', value: 'popular' },
+		],
+		default: 'relevance',
+		description: 'Order of the results. Top puts the highest score first.',
+		displayOptions: show('reddit', ['searchPosts']),
+	},
+	{
+		displayName: 'Posted Within',
+		name: 'redditPublishedWithin',
+		type: 'options',
+		options: [
+			{ name: 'Any Time', value: '' },
+			{ name: 'Last Day', value: 'day' },
+			{ name: 'Last Month', value: 'month' },
+			{ name: 'Last Week', value: 'week' },
+			{ name: 'Last Year', value: 'year' },
+		],
+		default: '',
+		description: 'Only posts from this period',
+		displayOptions: show('reddit', ['searchPosts']),
+	},
 ];
 
 const idFields: INodeProperties[] = [
+	{
+		displayName: 'Video ID or URL',
+		name: 'tiktokVideoId',
+		type: 'string',
+		required: true,
+		default: '',
+		placeholder: 'e.g. 7305085486984858894',
+		description: 'The numeric video ID from Search Videos, or a tiktok.com/@user/video/... link.',
+		displayOptions: show('tiktok', ['getVideoComments']),
+	},
 	{
 		displayName: 'Note ID or URL',
 		name: 'noteId',
@@ -382,7 +539,19 @@ const idFields: INodeProperties[] = [
 		default: '',
 		placeholder: 'e.g. dQw4w9WgXcQ',
 		description: 'The 11-character video ID, or a youtube.com or youtu.be link',
-		displayOptions: show('youtube', ['getTranscript']),
+		displayOptions: show('youtube', ['getTranscript', 'getVideoComments']),
+	},
+	{
+		displayName: 'Sort',
+		name: 'youtubeCommentSort',
+		type: 'options',
+		options: [
+			{ name: 'Newest', value: 'latest' },
+			{ name: 'Top', value: 'top' },
+		],
+		default: 'top',
+		description: 'Order of the comments',
+		displayOptions: show('youtube', ['getVideoComments']),
 	},
 	{
 		displayName: 'Language',
@@ -392,6 +561,125 @@ const idFields: INodeProperties[] = [
 		placeholder: 'e.g. en',
 		description: 'Preferred transcript language code. Leave empty for the original language.',
 		displayOptions: show('youtube', ['getTranscript']),
+	},
+	{
+		displayName: 'Username',
+		name: 'instagramUsername',
+		type: 'string',
+		required: true,
+		default: '',
+		placeholder: 'e.g. nasa',
+		description: 'The Instagram handle, with or without @',
+		displayOptions: show('instagram', ['getProfile', 'getPosts']),
+	},
+	{
+		displayName: 'Post Type',
+		name: 'instagramPostType',
+		type: 'options',
+		options: [
+			{ name: 'All Posts', value: 'all' },
+			{ name: 'Reels Only', value: 'reel' },
+		],
+		default: 'all',
+		description: 'All posts, or reels only',
+		displayOptions: show('instagram', ['getPosts']),
+	},
+	{
+		displayName: 'Post Shortcode or URL',
+		name: 'instagramPostId',
+		type: 'string',
+		required: true,
+		default: '',
+		placeholder: 'e.g. https://www.instagram.com/p/DeCPVhERA8e/',
+		description: 'The post or reel link, or its shortcode: what follows /p/ or /reel/ in the link',
+		displayOptions: show('instagram', ['getPostComments']),
+	},
+	{
+		displayName: 'Post ID or URL',
+		name: 'redditPostId',
+		type: 'string',
+		required: true,
+		default: '',
+		placeholder: 'e.g. t3_1nnrvkr',
+		description:
+			'The post ID from Search Posts (with or without t3_), or a link to the post, share links included',
+		displayOptions: show('reddit', ['getPostComments']),
+	},
+	{
+		displayName: 'Sort',
+		name: 'redditCommentSort',
+		type: 'options',
+		options: [
+			{ name: 'Best', value: 'best' },
+			{ name: 'Newest', value: 'latest' },
+			{ name: 'Top', value: 'popular' },
+		],
+		default: 'best',
+		description: "Order of the comments. Best is Reddit's default order.",
+		displayOptions: show('reddit', ['getPostComments']),
+	},
+	{
+		displayName: 'Product ASIN or URL',
+		name: 'amazonAsin',
+		type: 'string',
+		required: true,
+		default: '',
+		placeholder: 'e.g. B0GTS6KPPB',
+		description:
+			'The 10-character product ID from Search Products, or an Amazon product link with /dp/ in it',
+		displayOptions: show('amazon', ['getProductReviews']),
+	},
+	{
+		displayName: 'Country',
+		name: 'amazonCountry',
+		type: 'options',
+		options: [
+			{ name: 'Australia', value: 'AU' },
+			{ name: 'Belgium', value: 'BE' },
+			{ name: 'Brazil', value: 'BR' },
+			{ name: 'Canada', value: 'CA' },
+			{ name: 'China', value: 'CN' },
+			{ name: 'Egypt', value: 'EG' },
+			{ name: 'France', value: 'FR' },
+			{ name: 'Germany', value: 'DE' },
+			{ name: 'India', value: 'IN' },
+			{ name: 'Italy', value: 'IT' },
+			{ name: 'Japan', value: 'JP' },
+			{ name: 'Mexico', value: 'MX' },
+			{ name: 'Netherlands', value: 'NL' },
+			{ name: 'Poland', value: 'PL' },
+			{ name: 'Saudi Arabia', value: 'SA' },
+			{ name: 'Singapore', value: 'SG' },
+			{ name: 'Spain', value: 'ES' },
+			{ name: 'Sweden', value: 'SE' },
+			{ name: 'Türkiye', value: 'TR' },
+			{ name: 'United Arab Emirates', value: 'AE' },
+			{ name: 'United Kingdom', value: 'GB' },
+			{ name: 'United States', value: 'US' },
+		],
+		default: 'US',
+		description: "Which country's Amazon store to use. Prices come in that store's currency.",
+		displayOptions: show('amazon', ['searchProducts', 'getProductReviews']),
+	},
+	{
+		displayName: 'Sort',
+		name: 'amazonSort',
+		type: 'options',
+		options: [
+			{
+				name: 'Best Sellers',
+				value: 'best_sellers',
+				description: 'The matching products, the most bought last month first',
+			},
+			{ name: 'Most Relevant', value: 'relevance' },
+			{ name: 'Most Reviewed', value: 'reviews' },
+			{ name: 'Newest', value: 'newest' },
+			{ name: 'Price: High to Low', value: 'highest_price' },
+			{ name: 'Price: Low to High', value: 'lowest_price' },
+		],
+		default: 'relevance',
+		description: 'Order of the results',
+		displayOptions: show('amazon', ['searchProducts']),
 	},
 ];
 
@@ -411,15 +699,20 @@ const endpointFields: INodeProperties[] = [
 		name: 'platform',
 		type: 'options',
 		options: [
+			{ name: '1688', value: 'alibaba_1688' },
+			{ name: 'AliExpress', value: 'aliexpress' },
 			{ name: 'All Platforms', value: '' },
+			{ name: 'Amazon', value: 'amazon' },
 			{ name: 'Bilibili', value: 'bilibili' },
 			{ name: 'Douyin', value: 'douyin' },
+			{ name: 'Douyin Shop', value: 'douyin_shop' },
 			{ name: 'Google Ads Transparency', value: 'google' },
 			{ name: 'Instagram', value: 'instagram' },
 			{ name: 'Kuaishou', value: 'kuaishou' },
 			{ name: 'Meta Ad Library', value: 'meta' },
 			{ name: 'Reddit', value: 'reddit' },
 			{ name: 'RedNote (Xiaohongshu)', value: 'xiaohongshu' },
+			{ name: 'Taobao & Tmall', value: 'taobao' },
 			{ name: 'Telegram', value: 'telegram' },
 			{ name: 'TikTok', value: 'tiktok' },
 			{ name: 'WeChat Channels', value: 'wechat_channels' },
@@ -427,6 +720,7 @@ const endpointFields: INodeProperties[] = [
 			{ name: 'WeChat Search', value: 'wechat' },
 			{ name: 'Weibo', value: 'weibo' },
 			{ name: 'X (Twitter)', value: 'x' },
+			{ name: 'Xianyu (Goofish)', value: 'xianyu' },
 			{ name: 'YouTube', value: 'youtube' },
 			{ name: 'Zhihu', value: 'zhihu' },
 		],
@@ -501,11 +795,24 @@ const pagingFields: INodeProperties[] = [
 					'searchNotes',
 					'searchArticles',
 					'searchPosts',
+					'searchProducts',
 					'getNoteComments',
 					'getVideoComments',
+					'getPostComments',
+					'getPosts',
 					'getAccountArticles',
 				],
-				resource: ['tiktok', 'xiaohongshu', 'douyin', 'wechat', 'x'],
+				resource: [
+					'tiktok',
+					'youtube',
+					'instagram',
+					'x',
+					'reddit',
+					'amazon',
+					'xiaohongshu',
+					'douyin',
+					'wechat',
+				],
 			},
 		},
 	},
@@ -513,7 +820,19 @@ const pagingFields: INodeProperties[] = [
 
 const paidOperations = {
 	show: {
-		resource: ['tiktok', 'xiaohongshu', 'douyin', 'weibo', 'wechat', 'x', 'youtube', 'endpoint'],
+		resource: [
+			'tiktok',
+			'youtube',
+			'instagram',
+			'x',
+			'reddit',
+			'amazon',
+			'xiaohongshu',
+			'douyin',
+			'wechat',
+			'weibo',
+			'endpoint',
+		],
 	},
 	hide: { operation: ['find'] },
 };
@@ -524,7 +843,8 @@ const outputFields: INodeProperties[] = [
 		name: 'simplify',
 		type: 'boolean',
 		default: false,
-		description: 'Whether to return fewer fields per result (okdata compact view, same price)',
+		description:
+			'Whether to return a simplified version of each result (okdata compact view) instead of all fields',
 		displayOptions: paidOperations,
 	},
 	{
@@ -550,7 +870,7 @@ const outputFields: INodeProperties[] = [
 				typeOptions: { minValue: 0.0001, maxValue: 100, numberPrecision: 4 },
 				default: 0.1,
 				description:
-					'Calls that could cost more than this are refused before they run and bill nothing. Without this option each operation uses a cap a little above its current price.',
+					'A call priced above this cap is refused by okdata before it runs. Without this option each operation uses a cap a little above its current price.',
 			},
 			{
 				displayName: 'Raw Response',

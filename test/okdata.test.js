@@ -74,6 +74,59 @@ const CURATED = {
 		'/v1/tiktok/videos/search',
 		{ query: 'ai agents', sort: 'latest' },
 	],
+	'tiktok:getVideoComments': [
+		{ tiktokVideoId: 'https://www.tiktok.com/@nasa/video/7305085486984858894?lang=en' },
+		'/v1/tiktok/videos/comments/list',
+		{ id: '7305085486984858894' },
+	],
+	'youtube:searchVideos': [
+		{ query: 'n8n tutorial', youtubeSort: 'most_viewed' },
+		'/v1/youtube/videos/search',
+		{ query: 'n8n tutorial', sort: 'most_viewed' },
+	],
+	'youtube:getVideoComments': [
+		{ youtubeVideoId: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', youtubeCommentSort: 'latest' },
+		'/v1/youtube/videos/comments/list',
+		{ id: 'dQw4w9WgXcQ', sort: 'latest' },
+	],
+	'instagram:getProfile': [
+		{ instagramUsername: '@nasa' },
+		'/v1/instagram/users/get',
+		{ username: '@nasa' },
+	],
+	'instagram:getPosts': [
+		{ instagramUsername: 'nasa', instagramPostType: 'reel' },
+		'/v1/instagram/users/posts/list',
+		{ username: 'nasa', type: 'reel' },
+	],
+	'instagram:getPostComments': [
+		{ instagramPostId: 'DeCPVhERA8e' },
+		'/v1/instagram/posts/comments/list',
+		{ id: 'DeCPVhERA8e' },
+	],
+	'reddit:searchPosts': [
+		{ query: 'saturn rings', redditSort: 'popular', redditPublishedWithin: 'week' },
+		'/v1/reddit/posts/search',
+		{ query: 'saturn rings', sort: 'popular', published_within: 'week' },
+	],
+	'reddit:getPostComments': [
+		{ redditPostId: 't3_1nnrvkr', redditCommentSort: 'best' },
+		'/v1/reddit/posts/comments/list',
+		{ id: 't3_1nnrvkr', sort: 'best' },
+	],
+	'amazon:searchProducts': [
+		{ query: 'portable espresso maker', amazonCountry: 'GB', amazonSort: 'best_sellers' },
+		'/v1/amazon/products/search',
+		{ query: 'portable espresso maker', country: 'GB', sort: 'best_sellers' },
+	],
+	'amazon:getProductReviews': [
+		{
+			amazonAsin: 'https://www.amazon.com/Some-Product/dp/B0GTS6KPPB/ref=sr_1_1',
+			amazonCountry: 'US',
+		},
+		'/v1/amazon/products/reviews/list',
+		{ id: 'B0GTS6KPPB', country: 'US' },
+	],
 	'xiaohongshu:searchNotes': [
 		{ query: '防晒霜', xiaohongshuSort: 'popular', noteType: 'image' },
 		'/v1/xiaohongshu/notes/search',
@@ -246,7 +299,60 @@ test('options: simplify, fields, cursor, max price and raw response', async () =
 	assert.equal(out[0].json.meta.billing.amount, '0.002');
 });
 
-test('okdata errors become node errors that say nothing was billed', async () => {
+test('a pasted link goes to the url parameter where the endpoint takes one', async () => {
+	const cases = [
+		[
+			{
+				resource: 'instagram',
+				operation: 'getPostComments',
+				instagramPostId: ' https://www.instagram.com/reel/DeCPVhERA8e/ ',
+			},
+			{ url: 'https://www.instagram.com/reel/DeCPVhERA8e/' },
+		],
+		[
+			{
+				resource: 'reddit',
+				operation: 'getPostComments',
+				redditPostId: 'www.reddit.com/r/nasa/s/AbCdEf',
+				redditCommentSort: 'latest',
+			},
+			{ url: 'www.reddit.com/r/nasa/s/AbCdEf', sort: 'latest' },
+		],
+	];
+	for (const [params, query] of cases) {
+		const { calls } = await run(params, () => [200, ok({ items: [] })]);
+		assert.deepEqual(calls.auth[0].options.qs, query);
+	}
+});
+
+test('max pages follows next_cursor on the new list operations too', async () => {
+	const answer = (options, n) => [
+		200,
+		ok({ items: [{ id: `p${n}` }] }, { has_more: n < 3, next_cursor: n < 3 ? `c${n}` : null }),
+	];
+	const { out, calls } = await run(
+		{ resource: 'reddit', operation: 'searchPosts', query: 'a', maxPages: 5 },
+		answer,
+	);
+	assert.equal(calls.auth.length, 3);
+	assert.equal(calls.auth[2].options.qs.cursor, 'c2');
+	assert.equal(calls.auth[2].options.headers['X-Max-Price'], '0.01');
+	assert.equal(out.length, 3);
+});
+
+test('a single-object operation makes one call and returns one item', async () => {
+	const { out, calls } = await run(
+		{ resource: 'instagram', operation: 'getProfile', instagramUsername: 'nasa', maxPages: 5 },
+		() => [
+			200,
+			ok({ item: { username: 'nasa', followers: 1 } }, { has_more: true, next_cursor: 'c1' }),
+		],
+	);
+	assert.equal(calls.auth.length, 1);
+	assert.deepEqual(out[0].json, { username: 'nasa', followers: 1 });
+});
+
+test('okdata answers that are not ok become node errors with details and request ID', async () => {
 	const body = {
 		code: 'insufficient_balance',
 		message: 'Not enough balance for this call',
@@ -259,16 +365,25 @@ test('okdata errors become node errors that say nothing was billed', async () =>
 		run({ resource: 'weibo', operation: 'getHotSearch' }, () => [402, body]),
 		(error) => {
 			assert.match(error.message, /insufficient_balance/);
-			assert.match(error.description, /Nothing was billed\./);
-			assert.match(error.description, /Needs 0\.02/);
+			assert.doesNotMatch(error.message, /\berror\b/i);
+			assert.doesNotMatch(error.description, /bill/i);
+			assert.match(error.description, /Details: Needs 0\.02/);
+			assert.match(error.description, /Top up in the console\./);
 			assert.match(error.description, /r-err/);
 			return true;
 		},
 	);
 });
 
-test('billing is unknown when the answer lacks the field', () => {
-	assert.match(transport.errorDescription({ message: 'Bad gateway' }), /not known yet/);
+test('an answer that is not JSON points to the console', async () => {
+	await assert.rejects(
+		run({ resource: 'weibo', operation: 'getHotSearch' }, () => [502, 'Bad gateway']),
+		(error) => {
+			assert.match(error.message, /not JSON/);
+			assert.match(error.description, /okdata console/);
+			return true;
+		},
+	);
 });
 
 test('continue on fail returns the error as an item', async () => {
@@ -386,6 +501,18 @@ test('id clean-up', () => {
 	);
 	assert.equal(ids.douyinVideoId('https://v.douyin.com/abc/'), 'https://v.douyin.com/abc/');
 	assert.equal(ids.xiaohongshuNoteId(' 6650a1b2000000001e00abcd '), '6650a1b2000000001e00abcd');
+	assert.equal(
+		ids.tiktokVideoId('https://www.tiktok.com/@nasa/video/7305085486984858894'),
+		'7305085486984858894',
+	);
+	assert.equal(ids.tiktokVideoId('https://vm.tiktok.com/abc/'), 'https://vm.tiktok.com/abc/');
+	assert.equal(ids.amazonAsin('https://www.amazon.co.uk/dp/B0GTS6KPPB?th=1'), 'B0GTS6KPPB');
+	assert.equal(ids.amazonAsin('https://www.amazon.com/gp/product/B0GTS6KPPB'), 'B0GTS6KPPB');
+	assert.equal(ids.amazonAsin(' B0GTS6KPPB '), 'B0GTS6KPPB');
+	assert.ok(ids.LINK.test('https://redd.it/1nnrvkr'));
+	assert.ok(ids.LINK.test('instagram.com/p/DeCPVhERA8e/'));
+	assert.ok(!ids.LINK.test('t3_1nnrvkr'));
+	assert.ok(!ids.LINK.test('DeCPVhERA8e'));
 });
 
 test('list search offers catalog endpoints with price and docs link', async () => {
@@ -414,7 +541,48 @@ test('every operation default cap covers the endpoint max charge in the catalog'
 		assert.ok(endpoint, spec.endpointId);
 		assert.ok(Number(endpoint.maxCharge) <= Number(spec.maxPrice), spec.endpointId);
 		const accepted = new Set(endpoint.params.map((p) => p.name));
-		for (const apiName of Object.values(spec.fields))
+		for (const apiName of [...Object.values(spec.fields), ...Object.values(spec.linkParam ?? {})])
 			assert.ok(accepted.has(apiName), `${spec.endpointId} ${apiName}`);
 	}
+});
+
+test('every node option for an API parameter is a value the catalog accepts', () => {
+	const { properties } = require('../dist/nodes/Okdata/descriptions.js');
+	for (const spec of Object.values(OPERATIONS)) {
+		const endpoint = CATALOG.data.endpoints.find((e) => e.id === spec.endpointId);
+		for (const [field, apiName] of Object.entries(spec.fields)) {
+			const param = endpoint.params.find((p) => p.name === apiName);
+			const prop = properties.find((p) => p.name === field);
+			assert.ok(prop, field);
+			if (prop.type !== 'options' || !param.enum) continue;
+			for (const option of prop.options) {
+				if (option.value === '') continue;
+				assert.ok(
+					param.enum.includes(option.value),
+					`${spec.endpointId} ${apiName}=${option.value}`,
+				);
+			}
+		}
+	}
+});
+
+test('the resource list puts the English-first platforms first', () => {
+	const { properties } = require('../dist/nodes/Okdata/descriptions.js');
+	const resource = properties.find((p) => p.name === 'resource');
+	assert.deepEqual(
+		resource.options.map((o) => o.value),
+		[
+			'tiktok',
+			'youtube',
+			'instagram',
+			'x',
+			'reddit',
+			'amazon',
+			'xiaohongshu',
+			'douyin',
+			'wechat',
+			'weibo',
+			'endpoint',
+		],
+	);
 });

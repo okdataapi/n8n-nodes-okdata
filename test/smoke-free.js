@@ -55,7 +55,6 @@ async function main() {
 		node.execute.call(context({ resource: 'weibo', operation: 'getHotSearch' })),
 		(error) => {
 			assert.match(error.message, /unauthorized/);
-			assert.match(error.description, /Nothing was billed/);
 			assert.doesNotMatch(`${error.message} ${error.description}`, new RegExp(FAKE_KEY));
 			console.log(`ok  made-up key refused: ${error.message}`);
 			return true;
@@ -67,7 +66,7 @@ async function main() {
 		const endpoint = catalog.endpoints.find((e) => e.id === spec.endpointId);
 		assert.ok(endpoint, `${key}: ${spec.endpointId} missing from the live catalog`);
 		const accepted = new Set(endpoint.params.map((p) => p.name));
-		for (const apiName of Object.values(spec.fields))
+		for (const apiName of [...Object.values(spec.fields), ...Object.values(spec.linkParam ?? {})])
 			assert.ok(accepted.has(apiName), `${key}: ${apiName}`);
 		assert.ok(
 			Number(endpoint.maxCharge) <= Number(spec.maxPrice),
