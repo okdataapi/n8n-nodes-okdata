@@ -41,7 +41,7 @@ Live prices and every endpoint's fields: [okdata.online/apis](https://okdata.onl
 
 ## Credentials
 
-1. Sign up at [okdata.online](https://okdata.online/signup/?src=n8n-node) with your email. New accounts get trial credit, and the console makes your first API key (it starts with `okd_`).
+1. Sign up at [okdata.online](https://okdata.online/signup/?src=n8n-node) with your email. New accounts get a free trial of up to 333 calls, and the console makes your first API key (it starts with `okd_`).
 2. In n8n, create an **okdata API** credential and paste the key into **API Key**. n8n tests it with a free request that reads your balance.
 
 Use a key made for this n8n instance, and give it daily or monthly spending limits in the okdata console if you like.
@@ -71,7 +71,7 @@ Use a key made for this n8n instance, and give it daily or monthly spending limi
 
 ## Costs
 
-okdata is pay per call with no subscription, and new accounts get trial credit. Each call is billed to your okdata balance at the endpoint's price, and every endpoint has its own price ([okdata.online/apis](https://okdata.online/apis/?src=n8n-node)). Each page is a separate call, so Max Pages = 3 makes up to three calls.
+okdata is pay per call with no subscription, and new accounts get a free trial of up to 333 calls. Each call is billed to your okdata balance at the endpoint's price, and every endpoint has its own price ([okdata.online/apis](https://okdata.online/apis/?src=n8n-node)). Each page is a separate call, so Max Pages = 3 makes up to three calls.
 
 Every operation sends a price cap (`X-Max-Price`) a little above the endpoint's current price, and okdata refuses a call priced above the cap before it runs. Change the cap with **Options > Max Price Per Call (USD)**; Any Endpoint > Call defaults to $0.10.
 
